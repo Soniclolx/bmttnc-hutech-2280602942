@@ -27,25 +27,26 @@ def encrypt_message(key, message):
     cipher_text = cipher.encrypt(pad(message.encode(), AES.block_size))
     return cipher.iv + cipher_text
 #function to decrypt message
-def decrypt_message(key, message):
-    iv = message[:AES.block_size]
-    cipher_text = message[AES.block_size:]
+def decrypt_message(key, encrypted_message):
+    iv = encrypted_message[:AES.block_size]
+    cipher_text = encrypted_message[AES.block_size:]
     cipher = AES.new(key, AES.MODE_CBC, iv)
-    return decrypt_message.decode()
+    decrypted_message = unpad(cipher.decrypt(cipher_text), AES.block_size)
+    return decrypted_message.decode()
 #function to receive messages
 def receive_message():
     while True:
-        encrypt_message = client_socket.recv(1024)
-        decrypt_message = decrypt_message(aes_key, encrypt_message)
-        print(f"Received : {decrypt_message}")
-#start a thread to receive thread
+        encrypted_message = client_socket.recv(1024)
+        decrypted_message = decrypt_message(aes_key, encrypted_message)
+        print("Received : {decrypted_message}")
+#start the receiving thread
 receive_thread = threading.Thread(target=receive_message)
 receive_thread.start()
 #send messages
 while True:
-    message = input()
-    encrypted = encrypt_message(aes_key, message)
-    client_socket.send(encrypted)
+    message = input("enter message('exit'to quit):")
+    encrypted_message = encrypted_message(aes_key, message)
+    client_socket.send(encrypted_message)
     if message == "exit":
         break
 #close the connection
